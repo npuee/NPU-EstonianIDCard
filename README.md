@@ -53,9 +53,9 @@ Set-ADUserEstonianIDMapping
     Set Active Directory User altSecurityIdentities.
 ### Example
 ```powershell
-PS C:\temp> Set-ADUserEstonianIDMapping -Identity jjoeorg -EstonianIDPropertyName isikukood -Replace $true
+PS C:\temp> Set-ADUserEstonianIDMapping -Identity jjoeorg -EstonianIDPropertyName isikukood -Replace
 or
-PS C:\temp> Set-ADUserEstonianIDMapping -Identity jjoeorg -EstonianID 38001085718 -Replace $true
+PS C:\temp> Set-ADUserEstonianIDMapping -Identity jjoeorg -EstonianID 38001085718 -Replace
 
 ```
 ### Parameters
