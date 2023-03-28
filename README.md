@@ -2,6 +2,8 @@
 
 ## Description
 Provides an easy interface for Estonian National ID Card certificate mapping to active directiry user altSecurityIdentities.
+NB: Intpu for command have changed.
+
 
 ## Installation
  Copy NPU-EstonianIDCard  folder to windows powershell module location (C:\Program Files\WindowsPowerShell\Modules).  
