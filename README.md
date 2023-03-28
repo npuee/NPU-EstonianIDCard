@@ -3,7 +3,7 @@
 ## Description
 Provides an easy interface for Estonian National ID Card certificate mapping to active directiry user altSecurityIdentities.
 
-NB: Intpu for command have changed.
+NB: Input for commands have changed.
 
 
 ## Installation
