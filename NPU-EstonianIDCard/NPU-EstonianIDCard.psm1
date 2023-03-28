@@ -94,7 +94,7 @@ function Set-ADUserEstonianIDMapping {
 
         [Parameter(ParameterSetName = 'EstonianIDPropertyName')]
         [string]$EstonianIDPropertyName,
-        [Parameter()] [Boolean] $Replace = $false,
+        [Parameter()] [Switch] $Replace,
         [Parameter(Mandatory = $true)] [String] $Identity
     )
 
@@ -138,9 +138,10 @@ function Set-ADOUEstonianIDMapping {
     param(
         [Parameter(Mandatory = $true)] [String] $DN,
         [Parameter(Mandatory = $true)] [String] $EstonianIDPropertyName,
-        [Parameter()] [Boolean] $Replace = $false,
-        [Parameter()] [Boolean] $Force = $false,
-        [Parameter()] [Boolean] $safe = $false
+        [Parameter()] [Switch] $Replace,
+        [Parameter()] [Switch] $Force,
+        [Parameter()] [Switch] $WhatIf,
+        [Parameter()] [int] $Sleep = 0
     )
 
     #check if activedirectory module exist!
@@ -152,10 +153,9 @@ function Set-ADOUEstonianIDMapping {
     }
 
     #Collect active users.
-    $ActiveDirectoryUsers = Get-ADUser -Filter 'enabled -eq $true' -SearchBase $DN -Properties $EstonianIDPropertyName
-
-    #Loop collected users.
-    foreach ($user in $ActiveDirectoryUsers) {
+    #$ActiveDirectoryUsers = Get-ADUser -Filter 'enabled -eq $true' -SearchBase $DN -Properties $EstonianIDPropertyName
+    Get-ADUser -Filter 'enabled -eq $true' -SearchBase $DN -Properties $EstonianIDPropertyName | 
+    ForEach-Object {
         #Null user variables
         $_samAccountName = ""
         $_nationalID = ""
@@ -166,11 +166,11 @@ function Set-ADOUEstonianIDMapping {
         $_needs_to_be_replaced = $false
         $_replaced = $false
         #Insert User variables
-        $_samAccountName = $user.SamAccountName
-        $_nationalID = $user.$EstonianIDPropertyName     
+        $_samAccountName = $_.SamAccountName
+        $_nationalID = $_.$EstonianIDPropertyName     
         $_userCertificateMapping = Get-ADUserEstonianIDMapping -Identity $_samAccountName
 
-        #If alt mapping needs to be replaced
+        #If altSecuritymapping mapping needs to be replaced
         if ($_nationalID) {
             $_nationalIDMapping = Get-EstonianIDMapping $_nationalID
             #Check if mapping exist
@@ -179,10 +179,9 @@ function Set-ADOUEstonianIDMapping {
             }
         }
 
-        #If mapping can be replaced
+        #If altSecuritymapping can be replaced
         if ($_nationalIDMapping) {
-            $_Can_Be_Replaced = $true
-        
+            $_Can_Be_Replaced = $true       
         }
 
         #If needs to be replaced
@@ -190,33 +189,52 @@ function Set-ADOUEstonianIDMapping {
             $_needs_to_be_replaced = $true    
         }
 
-        #Replace altSecuritymapping that is needed to be replaced
-        if ($_needs_to_be_replaced -AND !$safe) {
-            Set-ADUserEstonianIDMapping -Identity $_samAccountName -EstonianIDPropertyName $EstonianIDPropertyName -Replace $Replace 
+        #Modify altSecuritymapping that is needed to be replaced
+        if ($_needs_to_be_replaced -AND !$WhatIf) {
+            if ($Replace) {
+                Set-ADUserEstonianIDMapping -Identity $_samAccountName -EstonianIDPropertyName $EstonianIDPropertyName -Replace
+            }
+            else {
+                Set-ADUserEstonianIDMapping -Identity $_samAccountName -EstonianIDPropertyName $EstonianIDPropertyName 
+            }
             $_replaced = $true     
         }
 
-        #Replace all that can be replaced
-        if ($_Can_Be_Replaced -AND $Force -AND !$safe) {
-            Set-ADUserEstonianIDMapping -Identity $_samAccountName -EstonianIDPropertyName $EstonianIDPropertyName -Replace $Replace
+
+        #Modify altSecuritymapping that can be replaced
+        if ($_Can_Be_Replaced -AND $Force -AND !$WhatIf) {
+            if ($Replace) {
+                Set-ADUserEstonianIDMapping -Identity $_samAccountName -EstonianIDPropertyName $EstonianIDPropertyName -Replace
+            }
+            else {
+                Set-ADUserEstonianIDMapping -Identity $_samAccountName -EstonianIDPropertyName $EstonianIDPropertyName 
+            }
             $_replaced = $true
         }
-
 
         #Output table object.
         new-object psobject -Property @{
             Account              = $_samAccountName
             NationalID           = $_nationalID
             MappingExists        = $_mappingExists  
-            Existing_Mapping     = $_userCertificateMapping
-            New_Mapping          = $_nationalIDMapping
+            #            Existing_Mapping     = $_userCertificateMapping
+            #            New_Mapping          = $_nationalIDMapping
             Can_Be_Replaced      = $_Can_Be_Replaced
             Needs_to_be_replaced = $_needs_to_be_replaced
             Replaced             = $_replaced
         } 
+
         #Format output
         Format-Table
-        # Suspend the script for 1 seconds
-        Start-Sleep -Seconds 1
+
+        #Seprator
+        Write-Host "-----"
+
+        # If sleep is specified then sleep
+        if ($Sleep -ge 1) {
+            Start-Sleep -Seconds $Sleep
+        }
     }# End for each user
+    #$OutputCollection | Format-Table -AutoSize
+
 }
