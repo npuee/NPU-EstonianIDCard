@@ -44,7 +44,7 @@ Set-ADUserEstonianIDMapping
     [-Identity <string>] 
     [-EstonianID <string>]
     [-EstonianIDPropertyName <string>]
-    [-Replace <bool>]
+    [-Replace <Switch>]
 ```
 ### Description
     Set Active Directory User altSecurityIdentities.
@@ -72,15 +72,15 @@ PS C:\temp> Set-ADUserEstonianIDMapping -Identity jjoeorg -EstonianID 3800108571
 Set-ADOUEstonianIDMapping
     [-DN] <string>
     [-EstonianIDPropertyName] <string>
-    [[-Replace] <bool>]
-    [[-Force] <bool>]
-    [[-safe] <bool>]
+    [[-Replace] <Switch>]
+    [[-Force] <Switch>]
+    [[-WhatIf] <Switch>]
 ```
 ### Description
     Set Active Directory Users altSecurityIdentities in specific OU.
 ### Example
 ```powershell
-PS C:\temp> Set-ADOUEstonianIDMapping -DN "OU=Users,DC=example,DC=com" -EstonianIDProperty "isikukood" -Replace $false -safe $false
+PS C:\temp> Set-ADOUEstonianIDMapping -DN "OU=Users,DC=example,DC=com" -EstonianIDProperty "isikukood" -Replace  -WhatIf
 
 ```
 ### Parameters
@@ -91,8 +91,8 @@ PS C:\temp> Set-ADOUEstonianIDMapping -DN "OU=Users,DC=example,DC=com" -Estonian
     -Replace
         Replace or Add altSecurityIdentities. Default is Add.
     -Force
-        If multiple mappings exist, replaces all existing ones. Use with -Replace $true 
-    -safe        
+        If multiple mappings exist, replaces all existing ones. Use with -Replace
+    -WhatIf        
         Display output without altering user accounts.
 
 
