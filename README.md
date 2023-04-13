@@ -114,7 +114,7 @@ X509:<I>C=EE,O=SK ID Solutions AS,OID.2.5.4.97=NTREE-10747013,CN=ESTEID2018<SR>4
 ```
 ### Parameters
     -EstonianID
-        Active Directory samAccountName.
+        Estonian identification (ID) code. (Use EstonianID OR EstonianIDPropertyName)  
 
 
 
