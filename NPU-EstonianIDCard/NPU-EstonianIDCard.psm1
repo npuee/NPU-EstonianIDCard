@@ -169,10 +169,6 @@ function Set-ADOUEstonianIDMapping {
         $_nationalID = $_.$EstonianIDPropertyName     
         $_userCertificateMapping = Get-ADUserEstonianIDMapping -Identity $_samAccountName
 
-        # Debug output
-        write-output $_.SamAccountName
-
-
         #If altSecuritymapping mapping needs to be replaced
         if ($_nationalID) {
             try{
