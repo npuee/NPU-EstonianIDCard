@@ -6,17 +6,16 @@
 # 
 # 
 
-
 #Set some global parameters
 $global:EstIDLdapURL = "esteid.ldap.sk.ee"
 $global:EstIDLdapPort = 636
 $global:EstIDLdapDN = "ou=Authentication,o=Identity card of Estonian citizen,dc=ESTEID,c=EE"
 
+
 function Get-EstonianIDMapping {
     param(
         [Parameter(Mandatory = $true)] [String] $EstonianID
-    )
-  
+    ) 
     #Define LDAP
     $ldapdn = 'LDAP://' + $global:EstIDLdapURL + ":" + $EstIDLdapPort + "/" + $EstIDLdapDN
     $auth = [System.DirectoryServices.AuthenticationTypes]::Anonymous
@@ -77,7 +76,7 @@ function Get-ADUserEstonianIDMapping {
         Import-Module -name ActiveDirectory
     }
     catch {
-        Write-Host "ActiveDirectory does not exist"
+        Write-Host "ActiveDirectory Module does not exist"
     }
 
     #Get AD User mapping
@@ -103,7 +102,7 @@ function Set-ADUserEstonianIDMapping {
         Import-Module -name ActiveDirectory
     }
     catch {
-        Write-Host "ActiveDirectory does not exist"
+        Write-Host "ActiveDirectory Module does not exist"
     }
 
     #If we pass national id number
@@ -170,9 +169,18 @@ function Set-ADOUEstonianIDMapping {
         $_nationalID = $_.$EstonianIDPropertyName     
         $_userCertificateMapping = Get-ADUserEstonianIDMapping -Identity $_samAccountName
 
+        # Debug output
+        write-output $_.SamAccountName
+
+
         #If altSecuritymapping mapping needs to be replaced
         if ($_nationalID) {
-            $_nationalIDMapping = Get-EstonianIDMapping $_nationalID
+            try{
+                $_nationalIDMapping = Get-EstonianIDMapping $_nationalID
+            }catch{
+                $_nationalIDMapping = $Null 
+            }
+
             #Check if mapping exist
             if ($_userCertificateMapping -eq $_nationalIDMapping) {
                 $_mappingExists = $true
