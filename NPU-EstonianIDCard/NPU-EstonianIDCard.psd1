@@ -12,7 +12,7 @@
     RootModule        = 'NPU-EstonianIDCard.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '1.0.1'
+    ModuleVersion     = '1.1.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -27,7 +27,7 @@
     CompanyName       = 'NPU'
 
     # Copyright statement for this module
-    Copyright         = '(c) 2023 Nikolai Pulman.'
+    Copyright         = '(c) 2024 Nikolai Pulman.'
 
     # Description of the functionality provided by this module
     Description       = '
@@ -78,7 +78,7 @@
         'Get-ADUserEstonianIDMapping'
         'Set-ADUserEstonianIDMapping'
         'Set-ADOUEstonianIDMapping'
-        'Get-EstonianIDMapping'
+        'Get-IDUserMapping'
     )
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
