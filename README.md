@@ -3,9 +3,6 @@
 ## Description
 Provides an easy interface for Estonian National ID Card certificate mapping to active directiry user altSecurityIdentities.
 
-NB: Input for commands have changed.
-
-
 ## Installation
  Copy NPU-EstonianIDCard  folder to windows powershell module location (C:\Program Files\WindowsPowerShell\Modules).  
 If you don't want to install module you can import from running powershell console.
@@ -19,7 +16,7 @@ If you don't want to install module you can import from running powershell conso
     Get-ADUserEstonianIDMapping
     Set-ADUserEstonianIDMapping
     Set-ADOUEstonianIDMapping
-    Get-EstonianIDMapping
+    Get-IDUserMapping
 
 
 ## Get-ADUserEstonianIDMapping:
@@ -102,19 +99,19 @@ PS C:\temp> Set-ADOUEstonianIDMapping -DN "OU=Users,DC=example,DC=com" -Estonian
 ## Get-EstonianIDMapping
 ### Syntax
 ```powershell
-Get-EstonianIDMapping
+Get-IDUserMapping
     [-EstonianID] <string>
 ```
 ### Description
     Displays secure altSecurityIdentities mapping from esteid.ldap.sk.ee.
 ### Example
 ```powershell
-PS C:\temp> Get-EstonianIDMapping -EstonianID 38001085718 
+PS C:\temp> Get-IDUserMapping -EstonianID 38001085718 
 X509:<I>C=EE,O=SK ID Solutions AS,OID.2.5.4.97=NTREE-10747013,CN=ESTEID2018<SR>48D9BEEA1D33795C2FD054ED29DE2D30
 ```
 ### Parameters
     -EstonianID
-        Estonian identification (ID) code. (Use EstonianID OR EstonianIDPropertyName)  
+        Estonian identification (ID) code.
 
 
 
