@@ -1,118 +1,119 @@
 # NPU-EstonianIDCard
 
 ## Description
-Provides an easy interface for Estonian National ID Card certificate mapping to active directiry user altSecurityIdentities.
+Provides a PowerShell module for mapping Estonian National ID Card, Digital ID, and eID certificates to Active Directory user `altSecurityIdentities`. Supports both **SK ID Solutions** (`esteid.ldap.sk.ee` / ESTEID2018) and **Thales & Zetes** (`ldap.eidpki.ee` / ESTEID2025) directories.
 
 ## Installation
- Copy NPU-EstonianIDCard  folder to windows powershell module location (C:\Program Files\WindowsPowerShell\Modules).  
-If you don't want to install module you can import from running powershell console.
+Copy the `NPU-EstonianIDCard` module folder to your PowerShell modules directory (e.g. `C:\Program Files\WindowsPowerShell\Modules`), or import directly from the module manifest:
+
 ```powershell
-    #Navigate to NPU-EstonianIDCard folder:
-    PS C:\> cd C:\Temp\NPU-EstonianIDCard\
-    #Import module from file:
-    PS C:\Temp\NPU-EstonianIDCard> Import-Module .\NPU-EstonianIDCard.psm1 -Force
+Import-Module .\NPU-EstonianIDCard\NPU-EstonianIDCard.psd1 -Force
 ```
-## NPU-EstonianIDCard Command  
-    Get-ADUserEstonianIDMapping
-    Set-ADUserEstonianIDMapping
-    Set-ADOUEstonianIDMapping
-    Get-IDUserMapping
 
+## Commands
+* `Get-IDUserMapping`
+* `Get-ADUserEstonianIDMapping`
+* `Set-ADUserEstonianIDMapping`
+* `Set-ADOUEstonianIDMapping`
 
-## Get-ADUserEstonianIDMapping:
+---
+
+## Get-IDUserMapping
+
+### Description
+Queries LDAP directories (`esteid.ldap.sk.ee` and `ldap.eidpki.ee`) for authentication certificates and returns the X.509 Strong Name Mapping string (`X509:<I>...<SR>...`). Queries are **live by default**. For bulk jobs and repeated runs, the `-UseCache` switch enables local caching (in-memory and disk with a 24-hour TTL) to protect against Zetes 60 req/hr rate limits. Supports pipeline input.
+
 ### Syntax
 ```powershell
-Get-ADUserEstonianIDMapping
-    [-Identity] <string>
+Get-IDUserMapping [-EstonianID] <string> [-UseCache]
 ```
-### Description
-    Get Active Directory User altSecurityIdentities.
-### Example
-```powershell
-PS C:\temp> Get-ADUserEstonianIDMapping -Identity jjoeorg
-X509:<I>C=EE,O=SK ID Solutions AS,OID.2.5.4.97=NTREE-10747013,CN=ESTEID2018<SR>48D9BEEA2D33795C2FD344ED29DE2D30
-```
-### Parameters
-    -Identity
-        Active Directory samAccountName.
 
+### Examples
+```powershell
+# Live lookup (default)
+Get-IDUserMapping -EstonianID '38001085718'
+
+# Bulk / cached lookup (stores/retrieves from local cache)
+Get-IDUserMapping -EstonianID '38001085718' -UseCache
+
+# Pipeline lookup
+'38001085718', '48001085718' | Get-IDUserMapping
+```
+
+---
+
+## Get-ADUserEstonianIDMapping
+
+### Description
+Retrieves existing Active Directory user `altSecurityIdentities`. Supports pipeline input from `Get-ADUser`.
+
+### Syntax
+```powershell
+Get-ADUserEstonianIDMapping [-Identity] <string>
+```
+
+### Examples
+```powershell
+Get-ADUserEstonianIDMapping -Identity jjoeorg
+
+# Via pipeline
+Get-ADUser -Filter 'department -eq "IT"' | Get-ADUserEstonianIDMapping
+```
+
+---
 
 ## Set-ADUserEstonianIDMapping
+
+### Description
+Sets or adds Estonian ID certificate mappings to an Active Directory user's `altSecurityIdentities`. Supports native `-WhatIf`, `-Confirm`, `-UseCache`, and `-Force`. If the user's `altSecurityIdentities` already match the resolved certificate mapping(s), no write operation is performed unless `-Force` is specified.
+
 ### Syntax
 ```powershell
-Set-ADUserEstonianIDMapping 
-    [-Identity <string>] 
-    [-EstonianID <string>]
-    [-EstonianIDPropertyName <string>]
-    [-Replace <Switch>]
+Set-ADUserEstonianIDMapping -Identity <string> -EstonianID <string> [-Replace] [-Force] [-UseCache] [-WhatIf] [-Confirm]
+Set-ADUserEstonianIDMapping -Identity <string> -EstonianIDPropertyName <string> [-Replace] [-Force] [-UseCache] [-WhatIf] [-Confirm]
 ```
-### Description
-    Set Active Directory User altSecurityIdentities.
-### Example
+
+### Examples
 ```powershell
-PS C:\temp> Set-ADUserEstonianIDMapping -Identity jjoeorg -EstonianIDPropertyName isikukood -Replace
-or
-PS C:\temp> Set-ADUserEstonianIDMapping -Identity jjoeorg -EstonianID 38001085718 -Replace
+# Update by explicit ID code (skips writing if already identical)
+Set-ADUserEstonianIDMapping -Identity jjoeorg -EstonianID '38001085718' -Replace
 
+# Update by reading personal code from an AD user attribute (e.g. isikukood)
+Set-ADUserEstonianIDMapping -Identity jjoeorg -EstonianIDPropertyName isikukood -Replace
+
+# Force write even if altSecurityIdentities already match
+Set-ADUserEstonianIDMapping -Identity jjoeorg -EstonianID '38001085718' -Replace -Force
+
+# Update using cached certificates (if available)
+Set-ADUserEstonianIDMapping -Identity jjoeorg -EstonianID '38001085718' -UseCache
+
+# Test changes safely with WhatIf
+Set-ADUserEstonianIDMapping -Identity jjoeorg -EstonianID '38001085718' -WhatIf
 ```
-### Parameters
-    -Identity
-        Active Directory samAccountName.
-    -EstonianID
-        Estonian identification (ID) code. (Use EstonianID OR EstonianIDPropertyName)    
-    -EstonianIDPropertyName
-        Active Directory User object attribute where Estonian identification (ID) code is stored. (Use EstonianID OR EstonianIDPropertyName)
-    -Replace
-        Replace or Add altSecurityIdentities. Default is Add.
 
+---
 
 ## Set-ADOUEstonianIDMapping
+
+### Description
+Batch updates certificate mappings for enabled users in an Active Directory Organizational Unit (OU). Accounts whose `altSecurityIdentities` already match the resolved certificate mapping(s) are skipped (no write operation is performed) unless `-Force` is specified. Emits structured `PSCustomObject` stream to the pipeline for easy formatting or CSV export. Supports native `-WhatIf`, `-Confirm`, and `-UseCache`.
+
 ### Syntax
 ```powershell
-Set-ADOUEstonianIDMapping
-    [-DN] <string>
-    [-EstonianIDPropertyName] <string>
-    [[-Replace] <Switch>]
-    [[-Force] <Switch>]
-    [[-WhatIf] <Switch>]
+Set-ADOUEstonianIDMapping [-DN] <string> [-EstonianIDPropertyName] <string> [-Replace] [-Force] [-UseCache] [-Sleep <int>] [-WhatIf] [-Confirm]
 ```
-### Description
-    Set Active Directory Users altSecurityIdentities in specific OU.
-### Example
+
+### Examples
 ```powershell
-PS C:\temp> Set-ADOUEstonianIDMapping -DN "OU=Users,DC=example,DC=com" -EstonianIDProperty "isikukood" -Replace  -WhatIf
+# Dry run with WhatIf
+Set-ADOUEstonianIDMapping -DN "OU=Users,DC=example,DC=com" -EstonianIDPropertyName "isikukood" -Replace -WhatIf
 
+# Run with caching enabled (recommended for large bulk updates to avoid Zetes 60 req/hr rate limits)
+Set-ADOUEstonianIDMapping -DN "OU=Users,DC=example,DC=com" -EstonianIDPropertyName "isikukood" -Replace -UseCache
+
+# Run and format output as a table
+Set-ADOUEstonianIDMapping -DN "OU=Users,DC=example,DC=com" -EstonianIDPropertyName "isikukood" -Replace | Format-Table
+
+# Run and export audit report to CSV
+Set-ADOUEstonianIDMapping -DN "OU=Users,DC=example,DC=com" -EstonianIDPropertyName "isikukood" -Replace | Export-Csv -Path 'C:\Reports\IDMappingReport.csv' -NoTypeInformation
 ```
-### Parameters
-    -DN
-        OU in Active Directory.
-    -EstonianIDPropertyName
-        Active Directory User object attribute where Estonian identification (ID) code is stored.
-    -Replace
-        Replace or Add altSecurityIdentities. Default is Add.
-    -Force
-        If multiple mappings exist, replaces all existing ones. Use with -Replace
-    -WhatIf        
-        Display output without altering user accounts.
-
-
-## Get-EstonianIDMapping
-### Syntax
-```powershell
-Get-IDUserMapping
-    [-EstonianID] <string>
-```
-### Description
-    Displays secure altSecurityIdentities mapping from esteid.ldap.sk.ee.
-### Example
-```powershell
-PS C:\temp> Get-IDUserMapping -EstonianID 38001085718 
-X509:<I>C=EE,O=SK ID Solutions AS,OID.2.5.4.97=NTREE-10747013,CN=ESTEID2018<SR>48D9BEEA1D33795C2FD054ED29DE2D30
-```
-### Parameters
-    -EstonianID
-        Estonian identification (ID) code.
-
-
-
-
